@@ -1,0 +1,1338 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Influencer Analytics — Dashboard Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base:      #090d14;
+      --bg-surface:   #0f1521;
+      --bg-card:      #131c2e;
+      --bg-card-hover:#172035;
+      --bg-input:     #1a2440;
+      --border:       #1e2d47;
+      --border-light: #243454;
+      --accent:       #6366f1;
+      --accent-glow:  rgba(99,102,241,0.25);
+      --accent2:      #06b6d4;
+      --accent3:      #f43f5e;
+      --accent4:      #10b981;
+      --accent5:      #f59e0b;
+      --text-1:       #f0f4ff;
+      --text-2:       #8b9cbf;
+      --text-3:       #4f6280;
+      --radius-sm:    8px;
+      --radius-md:    12px;
+      --radius-lg:    16px;
+      --radius-xl:    20px;
+      --shadow:       0 4px 24px rgba(0,0,0,0.5);
+      --shadow-glow:  0 0 30px rgba(99,102,241,0.15);
+    }
+
+    html, body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg-base);
+      color: var(--text-1);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── LAYOUT ─────────────────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ─────────────────────────────────────── */
+    .sidebar {
+      grid-row: 1 / 3;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      margin-bottom: 20px;
+    }
+
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 800;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px; font-weight: 800;
+      color: var(--text-1);
+      letter-spacing: -0.3px;
+    }
+
+    .sidebar-section {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--text-3);
+      text-transform: uppercase;
+      padding: 12px 12px 4px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      color: var(--text-2);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 13px;
+      transition: background 0.15s, color 0.15s;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-link:hover { background: var(--bg-card); color: var(--text-1); }
+    .nav-link.active {
+      background: linear-gradient(90deg, rgba(99,102,241,0.18), rgba(99,102,241,0.04));
+      color: #a5b4fc;
+      border-left: 2px solid var(--accent);
+    }
+
+    .nav-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.8; }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--accent);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 999px;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .user-chip {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+    }
+
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: white;
+      flex-shrink: 0;
+    }
+
+    .user-name { font-size: 12px; font-weight: 600; color: var(--text-1); }
+    .user-role { font-size: 11px; color: var(--text-3); }
+
+    /* ── TOPBAR ─────────────────────────────────────── */
+    .topbar {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .topbar-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px; font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .topbar-sub {
+      font-size: 12px; color: var(--text-3); margin-top: 1px;
+    }
+
+    .topbar-actions {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .select-dark {
+      background: var(--bg-input);
+      border: 1px solid var(--border-light);
+      color: var(--text-1);
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .select-dark:hover { border-color: var(--accent); }
+    .select-dark:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+    .btn {
+      padding: 7px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 600;
+      border: none; cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+    .btn-primary:hover { filter: brightness(1.15); }
+
+    .btn-ghost {
+      background: var(--bg-input);
+      border: 1px solid var(--border-light);
+      color: var(--text-2);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--text-1); }
+
+    .live-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent4);
+      box-shadow: 0 0 8px var(--accent4);
+      animation: pulse-dot 2s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .live-label { font-size: 11px; color: var(--accent4); font-weight: 600; }
+
+    /* ── MAIN CONTENT ─────────────────────────────────── */
+    .main {
+      padding: 24px 28px 40px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ── FILTER BAR ─────────────────────────────────── */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .filter-label { font-size: 12px; color: var(--text-3); font-weight: 500; }
+
+    .platform-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border-light);
+      background: var(--bg-card);
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .platform-pill input { display: none; }
+    .platform-pill.checked-IG  { background: rgba(236,72,153,0.12); border-color: #ec4899; color: #f9a8d4; }
+    .platform-pill.checked-TK  { background: rgba(6,182,212,0.12);  border-color: #06b6d4; color: #67e8f9; }
+    .platform-pill.checked-YT  { background: rgba(239,68,68,0.12);  border-color: #ef4444; color: #fca5a5; }
+    .platform-pill.checked-PT  { background: rgba(239,68,68,0.12);  border-color: #be123c; color: #fda4af; }
+
+    .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+    .search-input {
+      background: var(--bg-input);
+      border: 1px solid var(--border-light);
+      color: var(--text-1);
+      padding: 7px 14px 7px 36px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-family: inherit;
+      width: 220px;
+      outline: none;
+      transition: border-color 0.15s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%234f6280' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65' stroke='%234f6280' stroke-width='2'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 12px center;
+    }
+    .search-input::placeholder { color: var(--text-3); }
+    .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+    /* ── CARDS ─────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { border-color: var(--border-light); box-shadow: var(--shadow); }
+
+    /* ── KPI GRID ─────────────────────────────────── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .kpi-card {
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--kpi-color, var(--accent));
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+
+    .kpi-card::after {
+      content: '';
+      position: absolute; top: -40px; right: -20px;
+      width: 100px; height: 100px;
+      background: radial-gradient(circle, var(--kpi-glow, rgba(99,102,241,0.12)), transparent 70%);
+      pointer-events: none;
+    }
+
+    .kpi-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+    .kpi-label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .kpi-icon {
+      width: 32px; height: 32px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      background: var(--kpi-icon-bg, rgba(99,102,241,0.15));
+    }
+
+    .kpi-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px; font-weight: 800;
+      color: var(--text-1);
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .kpi-footer {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px;
+    }
+
+    .kpi-delta {
+      display: inline-flex; align-items: center; gap: 2px;
+      font-weight: 700; padding: 2px 6px; border-radius: 4px;
+    }
+    .delta-up   { background: rgba(16,185,129,0.15); color: #34d399; }
+    .delta-down { background: rgba(244,63,94,0.15);  color: #fb7185; }
+
+    .kpi-sub { color: var(--text-3); }
+
+    .spark-wrap { height: 36px; margin-top: 8px; }
+
+    /* ── CHART SECTION ─────────────────────────────── */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+    }
+
+    .chart-card { padding: 20px; }
+
+    .chart-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .chart-title {
+      font-size: 13px; font-weight: 700; color: var(--text-1);
+    }
+    .chart-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+    .chart-tabs {
+      display: flex; gap: 4px;
+    }
+
+    .tab-btn {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px; font-weight: 600;
+      border: 1px solid var(--border-light);
+      background: none;
+      color: var(--text-3);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .tab-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+    .tab-btn:hover:not(.active) { color: var(--text-1); border-color: var(--border-light); background: var(--bg-input); }
+
+    .chart-body { height: 260px; }
+
+    /* ── SECOND ROW ─────────────────────────────────── */
+    .charts-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* ── TABLE ─────────────────────────────────────── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--text-3);
+      text-align: left; padding: 0 0 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table th.right, .data-table td.right { text-align: right; }
+
+    .data-table td {
+      padding: 10px 0;
+      font-size: 12px; color: var(--text-2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { color: var(--text-1); }
+
+    .table-name { font-weight: 600; color: var(--text-1); }
+
+    .progress-bar {
+      height: 4px; border-radius: 999px;
+      background: var(--border);
+      margin-top: 4px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 999px;
+      background: var(--bar-color, var(--accent));
+      transition: width 0.6s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── PLATFORM TABLE ─────────────────────────────── */
+    .platform-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .platform-row:last-child { border-bottom: none; }
+
+    .platform-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+
+    .platform-name { font-size: 12px; font-weight: 600; color: var(--text-1); flex: 1; }
+
+    .platform-stat {
+      font-size: 11px; color: var(--text-3); text-align: right;
+    }
+    .platform-stat strong { display: block; font-size: 13px; font-weight: 700; color: var(--text-1); }
+
+    /* ── BADGE ─────────────────────────────────────── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 8px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+    }
+    .badge-green  { background: rgba(16,185,129,0.15); color: #34d399; }
+    .badge-rose   { background: rgba(244,63,94,0.15);  color: #fb7185; }
+    .badge-amber  { background: rgba(245,158,11,0.15); color: #fbbf24; }
+    .badge-indigo { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+
+    /* ── MINI STAT RINGS ─────────────────────────────── */
+    .ring-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 4px 0;
+    }
+
+    .ring-item { text-align: center; }
+
+    .ring-svg { width: 64px; height: 64px; transform: rotate(-90deg); }
+    .ring-bg   { fill: none; stroke: var(--border); stroke-width: 5; }
+    .ring-fill { fill: none; stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.8s cubic-bezier(.4,0,.2,1); }
+
+    .ring-label { font-size: 10px; color: var(--text-3); margin-top: 4px; }
+    .ring-value { font-size: 13px; font-weight: 700; color: var(--text-1); }
+
+    /* ── HEATMAP (activity) ─────────────────────────── */
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+      margin-top: 8px;
+    }
+
+    .heat-cell {
+      aspect-ratio: 1;
+      border-radius: 3px;
+      background: var(--border);
+      transition: transform 0.15s;
+      cursor: pointer;
+      position: relative;
+    }
+    .heat-cell:hover { transform: scale(1.3); z-index: 10; }
+
+    .heat-day { font-size: 9px; color: var(--text-3); text-align: center; margin-bottom: 4px; }
+
+    /* ── ACTIVITY FEED ─────────────────────────────── */
+    .activity-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-dot {
+      width: 8px; height: 8px; border-radius: 50%; margin-top: 4px;
+      flex-shrink: 0;
+    }
+
+    .activity-text { font-size: 12px; color: var(--text-2); flex: 1; }
+    .activity-text strong { color: var(--text-1); }
+    .activity-time { font-size: 10px; color: var(--text-3); margin-top: 2px; }
+
+    /* ── SCROLLBAR ─────────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 999px; }
+
+    /* ── RESPONSIVE ─────────────────────────────────── */
+    @media (max-width: 1200px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .charts-row { grid-template-columns: 1fr; }
+      .charts-row-3 { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+      .charts-row-3 { grid-template-columns: 1fr; }
+      .main { padding: 16px; }
+    }
+
+    /* ── TOOLTIP ─────────────────────────────────────── */
+    .tooltip-chip {
+      position: fixed;
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      color: var(--text-1);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      pointer-events: none;
+      z-index: 999;
+      display: none;
+      box-shadow: var(--shadow);
+    }
+
+    /* ── ANIMATION ─────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.4s ease both; }
+
+    .kpi-card { animation: fadeUp 0.4s ease both; }
+    .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+    .kpi-card:nth-child(2) { animation-delay: 0.10s; }
+    .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+    .kpi-card:nth-child(4) { animation-delay: 0.20s; }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- ══ SIDEBAR ══════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">IA</div>
+      <span class="logo-text">Influx</span>
+    </div>
+
+    <span class="sidebar-section">Principal</span>
+    <a class="nav-link active" href="#">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-link" href="#">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Analíticas
+      <span class="nav-badge">Pro</span>
+    </a>
+    <a class="nav-link" href="#">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Influencers
+    </a>
+    <a class="nav-link" href="#">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      Campañas
+    </a>
+
+    <span class="sidebar-section">Datos</span>
+    <a class="nav-link" href="#">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Productos
+    </a>
+    <a class="nav-link" href="#">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Comisiones
+    </a>
+    <a class="nav-link" href="#">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Reportes
+    </a>
+
+    <span class="sidebar-section">Sistema</span>
+    <a class="nav-link" href="#">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Integraciones
+    </a>
+    <a class="nav-link" href="#">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      Ajustes
+    </a>
+
+    <div class="sidebar-bottom">
+      <div class="user-chip">
+        <div class="user-avatar">MG</div>
+        <div>
+          <div class="user-name">María García</div>
+          <div class="user-role">Influencer · Pro</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ TOPBAR ════════════════════════════════════════ -->
+  <header class="topbar">
+    <div>
+      <div class="topbar-title">Dashboard</div>
+      <div class="topbar-sub">Resumen de rendimiento y comisiones</div>
+    </div>
+
+    <div class="topbar-actions">
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="live-dot"></div>
+        <span class="live-label">En vivo</span>
+      </div>
+
+      <select id="range" class="select-dark">
+        <option value="7">Últimos 7 días</option>
+        <option value="30" selected>Últimos 30 días</option>
+        <option value="90">Últimos 90 días</option>
+      </select>
+
+      <button class="btn btn-ghost" onclick="exportData()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline;margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exportar
+      </button>
+
+      <button class="btn btn-primary">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nueva campaña
+      </button>
+    </div>
+  </header>
+
+  <!-- ══ MAIN ══════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar fade-up">
+      <span class="filter-label">Plataformas:</span>
+
+      <label class="platform-pill checked-IG" id="pill-Instagram">
+        <input type="checkbox" class="platform-checkbox" value="Instagram" checked>
+        <span class="dot" style="background:#ec4899"></span> Instagram
+      </label>
+      <label class="platform-pill checked-TK" id="pill-TikTok">
+        <input type="checkbox" class="platform-checkbox" value="TikTok" checked>
+        <span class="dot" style="background:#06b6d4"></span> TikTok
+      </label>
+      <label class="platform-pill checked-YT" id="pill-YouTube">
+        <input type="checkbox" class="platform-checkbox" value="YouTube" checked>
+        <span class="dot" style="background:#ef4444"></span> YouTube
+      </label>
+      <label class="platform-pill" id="pill-Pinterest">
+        <input type="checkbox" class="platform-checkbox" value="Pinterest">
+        <span class="dot" style="background:#be123c"></span> Pinterest
+      </label>
+
+      <div style="margin-left:auto;">
+        <input id="campaignSearch" type="search" class="search-input" placeholder="Buscar campaña o producto..." />
+      </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <section class="kpi-grid">
+      <div class="card kpi-card" style="--kpi-color:#6366f1;--kpi-glow:rgba(99,102,241,0.2);--kpi-icon-bg:rgba(99,102,241,0.15)">
+        <div class="kpi-header">
+          <span class="kpi-label">Ingresos por comisiones</span>
+          <div class="kpi-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+        </div>
+        <div id="kpi-commissions" class="kpi-value">€0</div>
+        <div class="kpi-footer">
+          <span class="kpi-delta delta-up" id="kpi-com-delta">▲ 0%</span>
+          <span class="kpi-sub">vs periodo anterior</span>
+        </div>
+        <div class="spark-wrap"><canvas id="miniSparkCom"></canvas></div>
+      </div>
+
+      <div class="card kpi-card" style="--kpi-color:#06b6d4;--kpi-glow:rgba(6,182,212,0.2);--kpi-icon-bg:rgba(6,182,212,0.15)">
+        <div class="kpi-header">
+          <span class="kpi-label">Ventas totales</span>
+          <div class="kpi-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          </div>
+        </div>
+        <div id="kpi-sales" class="kpi-value">0</div>
+        <div class="kpi-footer">
+          <span class="kpi-delta delta-up" id="kpi-sales-delta">▲ 0%</span>
+          <span class="kpi-sub">número de ventas</span>
+        </div>
+        <div class="spark-wrap"><canvas id="miniSparkSales"></canvas></div>
+      </div>
+
+      <div class="card kpi-card" style="--kpi-color:#10b981;--kpi-glow:rgba(16,185,129,0.2);--kpi-icon-bg:rgba(16,185,129,0.15)">
+        <div class="kpi-header">
+          <span class="kpi-label">Conversion rate</span>
+          <div class="kpi-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+        </div>
+        <div id="kpi-conversion" class="kpi-value">0%</div>
+        <div class="kpi-footer">
+          <span class="kpi-delta delta-up" id="kpi-conv-delta">▲ 0%</span>
+          <span class="kpi-sub">conversiones / alcance</span>
+        </div>
+        <div class="spark-wrap"><canvas id="miniSparkConv"></canvas></div>
+      </div>
+
+      <div class="card kpi-card" style="--kpi-color:#f59e0b;--kpi-glow:rgba(245,158,11,0.2);--kpi-icon-bg:rgba(245,158,11,0.15)">
+        <div class="kpi-header">
+          <span class="kpi-label">Engagement rate</span>
+          <div class="kpi-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+        </div>
+        <div id="kpi-engagement" class="kpi-value">0%</div>
+        <div class="kpi-footer">
+          <span class="kpi-delta delta-up" id="kpi-eng-delta">▲ 0%</span>
+          <span class="kpi-sub">interacciones / alcance</span>
+        </div>
+        <div class="spark-wrap"><canvas id="miniSparkEng"></canvas></div>
+      </div>
+    </section>
+
+    <!-- CHARTS ROW 1: Line + Donut -->
+    <div class="charts-row">
+      <div class="card chart-card fade-up">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Tendencia de rendimiento</div>
+            <div class="chart-sub">Ventas, interacciones y alcance</div>
+          </div>
+          <div class="chart-tabs">
+            <button class="tab-btn active" data-tab="all">Todo</button>
+            <button class="tab-btn" data-tab="sales">Ventas</button>
+            <button class="tab-btn" data-tab="reach">Alcance</button>
+          </div>
+        </div>
+        <div class="chart-body"><canvas id="conversionLine"></canvas></div>
+      </div>
+
+      <div class="card chart-card fade-up">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Share de ingresos</div>
+            <div class="chart-sub">Distribución por producto</div>
+          </div>
+        </div>
+        <div class="chart-body"><canvas id="revenueDonut"></canvas></div>
+
+        <!-- Ring meters -->
+        <div class="ring-grid" style="margin-top:16px">
+          <div class="ring-item">
+            <svg class="ring-svg" viewBox="0 0 36 36">
+              <circle class="ring-bg" cx="18" cy="18" r="15.9"/>
+              <circle class="ring-fill" cx="18" cy="18" r="15.9" stroke="#6366f1" id="ring1" stroke-dasharray="100 100" stroke-dashoffset="60"/>
+            </svg>
+            <div class="ring-value" id="ring1-val">40%</div>
+            <div class="ring-label">Producto A</div>
+          </div>
+          <div class="ring-item">
+            <svg class="ring-svg" viewBox="0 0 36 36">
+              <circle class="ring-bg" cx="18" cy="18" r="15.9"/>
+              <circle class="ring-fill" cx="18" cy="18" r="15.9" stroke="#06b6d4" id="ring2" stroke-dasharray="100 100" stroke-dashoffset="70"/>
+            </svg>
+            <div class="ring-value" id="ring2-val">30%</div>
+            <div class="ring-label">Producto B</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW 2: Bar + Platforms + Activity -->
+    <div class="charts-row-3">
+
+      <!-- Ingresos por producto -->
+      <div class="card chart-card fade-up">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Ingresos por producto</div>
+            <div class="chart-sub">Comparativa de periodo</div>
+          </div>
+        </div>
+        <div style="height:200px"><canvas id="revenueBar"></canvas></div>
+
+        <table class="data-table" style="margin-top:16px">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th class="right">Precio</th>
+              <th class="right">Ventas</th>
+            </tr>
+          </thead>
+          <tbody id="productsTable"></tbody>
+        </table>
+      </div>
+
+      <!-- Plataformas -->
+      <div class="card chart-card fade-up">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Rendimiento por plataforma</div>
+            <div class="chart-sub">Alcance · Ventas · ROI</div>
+          </div>
+        </div>
+        <div style="height:200px"><canvas id="platformStacked"></canvas></div>
+
+        <div id="platformRows" style="margin-top:12px"></div>
+      </div>
+
+      <!-- Actividad + Campañas -->
+      <div class="card chart-card fade-up">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Actividad reciente</div>
+            <div class="chart-sub">Últimas conversiones</div>
+          </div>
+        </div>
+
+        <!-- Mini heatmap -->
+        <div style="margin-bottom:12px">
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:3px">
+            <div class="heat-day">L</div><div class="heat-day">M</div><div class="heat-day">X</div>
+            <div class="heat-day">J</div><div class="heat-day">V</div><div class="heat-day">S</div>
+            <div class="heat-day">D</div>
+          </div>
+          <div class="heatmap-grid" id="heatmap"></div>
+        </div>
+
+        <div id="activityFeed"></div>
+      </div>
+    </div>
+
+    <!-- CAMPAIGNS TABLE -->
+    <div class="card chart-card fade-up">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Campañas activas</div>
+          <div class="chart-sub">Resultados por campaña y producto</div>
+        </div>
+        <span class="badge badge-indigo" id="campaign-count">0 activas</span>
+      </div>
+
+      <div style="overflow-x:auto">
+        <table class="data-table" style="min-width:600px">
+          <thead>
+            <tr>
+              <th>Campaña</th>
+              <th>Plataforma</th>
+              <th>Producto</th>
+              <th class="right">Ventas</th>
+              <th class="right">Ingresos</th>
+              <th class="right">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="campaignsTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="tooltip-chip" id="tooltip"></div>
+
+<script>
+/* ════════════════════════════════════════════════
+   DATOS DE EJEMPLO
+════════════════════════════════════════════════ */
+const PRODUCTS = [
+  { id:'A', name:'Serum Vitamina C', price:50,  color:'#6366f1' },
+  { id:'B', name:'Crema Facial Pro', price:120, color:'#06b6d4' },
+  { id:'C', name:'Kit Skincare',     price:80,  color:'#10b981' }
+];
+
+function genTrend(base, len=90, noise=0.25){
+  const arr=[];
+  for(let i=0;i<len;i++){
+    const seasonal = base * (1 + 0.15*Math.sin(i/4));
+    const trend    = base * (1 + i/len*0.3);
+    arr.push(Math.max(0, Math.round((seasonal+trend)/2 * (1+(Math.random()-.5)*noise))));
+  }
+  return arr;
+}
+
+const SAMPLE = {
+  Instagram: { color:'#ec4899', reachTrend:genTrend(800), salesTrend:genTrend(8), interactionsTrend:genTrend(200), cost:300 },
+  TikTok:    { color:'#06b6d4', reachTrend:genTrend(1200), salesTrend:genTrend(12), interactionsTrend:genTrend(350), cost:450 },
+  YouTube:   { color:'#ef4444', reachTrend:genTrend(600), salesTrend:genTrend(4), interactionsTrend:genTrend(90), cost:200 },
+  Pinterest: { color:'#be123c', reachTrend:genTrend(150), salesTrend:genTrend(1), interactionsTrend:genTrend(20), cost:40 }
+};
+
+const COMMISSION_RATE = 0.15;
+
+const ACTIVITIES = [
+  { text:'<strong>Instagram</strong> generó 3 ventas de <strong>Serum Vitamina C</strong>', time:'hace 2 min', color:'#ec4899' },
+  { text:'<strong>TikTok</strong> alcanzó 1.2k impresiones nuevas', time:'hace 8 min', color:'#06b6d4' },
+  { text:'Nueva conversión de <strong>Crema Facial Pro</strong> via YouTube', time:'hace 15 min', color:'#ef4444' },
+  { text:'<strong>Instagram</strong> superó el objetivo semanal de engagement', time:'hace 1h', color:'#ec4899' },
+  { text:'Comisión de €54 acreditada — <strong>Kit Skincare</strong>', time:'hace 2h', color:'#10b981' }
+];
+
+/* ════════════════════════════════════════════════
+   ESTADO
+════════════════════════════════════════════════ */
+let state = {
+  rangeDays: 30,
+  platforms: new Set(['Instagram','TikTok','YouTube']),
+  prevAgg: null
+};
+
+const fmtCurr = v => new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(v);
+const fmtNum  = v => new Intl.NumberFormat('es-ES').format(v);
+
+function daysArray(n){
+  return Array.from({length:n},(_, i)=>{
+    const d=new Date(); d.setDate(d.getDate()-(n-1-i));
+    return d.toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
+  });
+}
+
+function aggregate(days=state.rangeDays){
+  const plats=[...state.platforms];
+  const reach=new Array(days).fill(0);
+  const inter=new Array(days).fill(0);
+  const sales=new Array(days).fill(0);
+
+  plats.forEach(p=>{
+    const s=SAMPLE[p];
+    const off=90-days;
+    for(let i=0;i<days;i++){
+      reach[i]+=(s.reachTrend[off+i]||0);
+      inter[i]+=(s.interactionsTrend[off+i]||0);
+      sales[i]+=(s.salesTrend[off+i]||0);
+    }
+  });
+
+  const totalSales=sales.reduce((a,b)=>a+b,0);
+  const totalReach=reach.reduce((a,b)=>a+b,0);
+  const totalInter=inter.reduce((a,b)=>a+b,0);
+  const weights={A:0.4,B:0.3,C:0.3};
+  const revenueByProduct=PRODUCTS.map(p=>Math.round(p.price*(totalSales*weights[p.id])));
+  const totalRevenue=revenueByProduct.reduce((a,b)=>a+b,0);
+
+  return {
+    labels:daysArray(days), reach, interactions:inter, sales,
+    totalSales, totalReach, totalInteractions:totalInter,
+    totalRevenue, commissions:totalRevenue*COMMISSION_RATE,
+    revenueByProduct
+  };
+}
+
+/* ════════════════════════════════════════════════
+   CHARTS
+════════════════════════════════════════════════ */
+Chart.defaults.color='#4f6280';
+Chart.defaults.borderColor='rgba(30,45,71,0.8)';
+
+let lineChart, barChart, donutChart, stackedChart;
+let sparkCom, sparkSales, sparkConv, sparkEng;
+
+function mkGrad(ctx, color, alpha1=0.25, alpha2=0){
+  const g=ctx.createLinearGradient(0,0,0,260);
+  g.addColorStop(0,color+Math.round(alpha1*255).toString(16).padStart(2,'0'));
+  g.addColorStop(1,color+Math.round(alpha2*255).toString(16).padStart(2,'0'));
+  return g;
+}
+
+function sparkOpts(color){
+  return {
+    type:'line',
+    data:{labels:[],datasets:[{data:[],borderColor:color,backgroundColor:color+'22',tension:0.4,pointRadius:0,fill:true,borderWidth:1.5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}}
+  };
+}
+
+function createCharts(){
+  const agg=aggregate();
+
+  // Line chart
+  const ctxL=document.getElementById('conversionLine').getContext('2d');
+  lineChart=new Chart(ctxL,{
+    type:'line',
+    data:{labels:agg.labels,datasets:[
+      {label:'Ventas',data:agg.sales,borderColor:'#6366f1',backgroundColor:mkGrad(ctxL,'#6366f1'),tension:0.4,pointRadius:0,pointHoverRadius:4,fill:true,borderWidth:2},
+      {label:'Interacciones (÷20)',data:agg.interactions.map(v=>Math.round(v/20)),borderColor:'#06b6d4',backgroundColor:'transparent',tension:0.4,pointRadius:0,pointHoverRadius:4,borderWidth:1.5,borderDash:[5,4]},
+      {label:'Alcance (÷100)',data:agg.reach.map(v=>Math.round(v/100)),borderColor:'#f59e0b',backgroundColor:'transparent',tension:0.4,pointRadius:0,pointHoverRadius:4,borderWidth:1.5}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{color:'#8b9cbf',boxWidth:12,padding:16,font:{size:11}}}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:8,color:'#4f6280',font:{size:10}}},y:{grid:{color:'rgba(30,45,71,0.8)'},ticks:{color:'#4f6280',font:{size:10}}}}}
+  });
+
+  // Bar chart
+  const ctxB=document.getElementById('revenueBar').getContext('2d');
+  barChart=new Chart(ctxB,{
+    type:'bar',
+    data:{labels:PRODUCTS.map(p=>p.name),datasets:[
+      {label:'Ingresos',data:agg.revenueByProduct,backgroundColor:PRODUCTS.map(p=>p.color+'99'),borderColor:PRODUCTS.map(p=>p.color),borderWidth:1,borderRadius:6,borderSkipped:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fmtCurr(c.raw)}}},scales:{x:{grid:{display:false},ticks:{color:'#4f6280',font:{size:10}}},y:{grid:{color:'rgba(30,45,71,0.8)'},ticks:{color:'#4f6280',font:{size:10},callback:v=>fmtCurr(v)}}}}
+  });
+
+  // Donut
+  const ctxD=document.getElementById('revenueDonut').getContext('2d');
+  donutChart=new Chart(ctxD,{
+    type:'doughnut',
+    data:{labels:PRODUCTS.map(p=>p.name),datasets:[{data:agg.revenueByProduct,backgroundColor:PRODUCTS.map(p=>p.color+'cc'),borderColor:'#131c2e',borderWidth:3,hoverOffset:8}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{position:'bottom',labels:{color:'#8b9cbf',boxWidth:10,padding:12,font:{size:11}}}}}
+  });
+
+  // Stacked
+  const ctxS=document.getElementById('platformStacked').getContext('2d');
+  const platKeys=Object.keys(SAMPLE);
+  stackedChart=new Chart(ctxS,{
+    type:'bar',
+    data:{
+      labels:platKeys,
+      datasets:[
+        {label:'Alcance (k)',data:platKeys.map(k=>Math.round(SAMPLE[k].reachTrend.slice(-state.rangeDays).reduce((a,b)=>a+b,0)/1000)),backgroundColor:'#6366f180',borderRadius:4,borderSkipped:false},
+        {label:'Interacciones (k)',data:platKeys.map(k=>Math.round(SAMPLE[k].interactionsTrend.slice(-state.rangeDays).reduce((a,b)=>a+b,0)/1000)),backgroundColor:'#06b6d480',borderRadius:4,borderSkipped:false},
+        {label:'Ventas',data:platKeys.map(k=>Math.round(SAMPLE[k].salesTrend.slice(-state.rangeDays).reduce((a,b)=>a+b,0))),backgroundColor:'#f59e0b80',borderRadius:4,borderSkipped:false}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,grid:{display:false},ticks:{color:'#4f6280',font:{size:10}}},y:{stacked:true,grid:{color:'rgba(30,45,71,0.8)'},ticks:{color:'#4f6280',font:{size:10}}}},plugins:{legend:{position:'bottom',labels:{color:'#8b9cbf',boxWidth:10,padding:12,font:{size:11}}}}}
+  });
+
+  // Sparks
+  sparkCom  = new Chart(document.getElementById('miniSparkCom'),  sparkOpts('#6366f1'));
+  sparkSales= new Chart(document.getElementById('miniSparkSales'), sparkOpts('#06b6d4'));
+  sparkConv = new Chart(document.getElementById('miniSparkConv'),  sparkOpts('#10b981'));
+  sparkEng  = new Chart(document.getElementById('miniSparkEng'),   sparkOpts('#f59e0b'));
+}
+
+/* ════════════════════════════════════════════════
+   UPDATE UI
+════════════════════════════════════════════════ */
+function updateUI(){
+  const agg=aggregate();
+  const prev=aggregate(Math.max(state.rangeDays, 7));
+
+  // KPIs
+  animCount('kpi-commissions', agg.commissions, true);
+  animCount('kpi-sales',       agg.totalSales,  false);
+
+  const conv = agg.totalReach ? (agg.totalSales/agg.totalReach*100) : 0;
+  const eng  = agg.totalReach ? (agg.totalInteractions/agg.totalReach*100) : 0;
+  document.getElementById('kpi-conversion').textContent = conv.toFixed(2)+'%';
+  document.getElementById('kpi-engagement').textContent = eng.toFixed(2)+'%';
+
+  // Deltas (fake but realistic)
+  setDelta('kpi-com-delta',   Math.round((Math.random()*20)-5));
+  setDelta('kpi-sales-delta', Math.round((Math.random()*20)-3));
+  setDelta('kpi-conv-delta',  Math.round((Math.random()*15)-4));
+  setDelta('kpi-eng-delta',   Math.round((Math.random()*18)-6));
+
+  // Sparks
+  updateSpark(sparkCom,   agg.labels, agg.sales.map(v=>v*50*COMMISSION_RATE));
+  updateSpark(sparkSales, agg.labels, agg.sales);
+  updateSpark(sparkConv,  agg.labels, agg.sales.map((v,i)=>agg.reach[i]?+(v/agg.reach[i]*100).toFixed(2):0));
+  updateSpark(sparkEng,   agg.labels, agg.interactions.map((v,i)=>agg.reach[i]?+(v/agg.reach[i]*100).toFixed(2):0));
+
+  // Products table
+  const ptb=document.getElementById('productsTable');
+  ptb.innerHTML='';
+  PRODUCTS.forEach((p,i)=>{
+    const sales=Math.round(agg.totalSales*[0.4,0.3,0.3][i]);
+    const maxSales=Math.max(...PRODUCTS.map((_,j)=>Math.round(agg.totalSales*[0.4,0.3,0.3][j])));
+    const pct=maxSales?Math.round(sales/maxSales*100):0;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><span class="table-name">${p.name}</span><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;--bar-color:${p.color}"></div></div></td>
+      <td class="right">${fmtCurr(p.price)}</td>
+      <td class="right"><strong style="color:${p.color}">${fmtNum(sales)}</strong></td>
+    `;
+    ptb.appendChild(tr);
+  });
+
+  // Platform rows
+  const pr=document.getElementById('platformRows');
+  pr.innerHTML='';
+  [...state.platforms].forEach(k=>{
+    const s=SAMPLE[k];
+    const reach=s.reachTrend.slice(-state.rangeDays).reduce((a,b)=>a+b,0);
+    const sales=s.salesTrend.slice(-state.rangeDays).reduce((a,b)=>a+b,0);
+    const roi=s.cost>0?((sales*65-s.cost)/s.cost*100).toFixed(0)+'%':'—';
+    pr.innerHTML+=`
+      <div class="platform-row">
+        <span class="platform-dot" style="background:${s.color}"></span>
+        <span class="platform-name">${k}</span>
+        <div class="platform-stat"><strong>${fmtNum(reach)}</strong>alcance</div>
+        <div class="platform-stat" style="margin-left:12px"><strong>${fmtNum(sales)}</strong>ventas</div>
+        <div class="platform-stat" style="margin-left:12px"><strong style="color:${parseFloat(roi)>0?'#34d399':'#fb7185'}">${roi}</strong>ROI</div>
+      </div>`;
+  });
+
+  // Campaigns table
+  const ctb=document.getElementById('campaignsTable');
+  ctb.innerHTML='';
+  let count=0;
+  [...state.platforms].forEach(k=>{
+    const s=SAMPLE[k];
+    const sales=s.salesTrend.slice(-state.rangeDays).reduce((a,b)=>a+b,0);
+    if(!sales) return;
+    count++;
+    PRODUCTS.slice(0,2).forEach((p,i)=>{
+      const pSales=Math.round(sales*[0.55,0.45][i]);
+      const rev=Math.round(pSales*p.price*COMMISSION_RATE);
+      const status=pSales>5?'<span class="badge badge-green">Activa</span>':pSales>2?'<span class="badge badge-amber">Moderada</span>':'<span class="badge badge-rose">Baja</span>';
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td><span class="table-name">${k} · Campaña ${i+1}</span></td>
+        <td><span class="platform-pill" style="display:inline-flex;padding:3px 10px"><span class="dot" style="background:${s.color}"></span>${k}</span></td>
+        <td style="color:var(--text-2)">${p.name}</td>
+        <td class="right"><strong>${fmtNum(pSales)}</strong></td>
+        <td class="right" style="color:#a5b4fc">${fmtCurr(rev)}</td>
+        <td class="right">${status}</td>
+      `;
+      ctb.appendChild(tr);
+    });
+  });
+  document.getElementById('campaign-count').textContent=count+' activas';
+
+  // Charts update
+  lineChart.data.labels=agg.labels;
+  lineChart.data.datasets[0].data=agg.sales;
+  lineChart.data.datasets[1].data=agg.interactions.map(v=>Math.round(v/20));
+  lineChart.data.datasets[2].data=agg.reach.map(v=>Math.round(v/100));
+  lineChart.update();
+
+  barChart.data.datasets[0].data=agg.revenueByProduct;
+  barChart.update();
+
+  donutChart.data.datasets[0].data=agg.revenueByProduct;
+  donutChart.update();
+
+  const total=agg.revenueByProduct.reduce((a,b)=>a+b,0);
+  const pctA=total?Math.round(agg.revenueByProduct[0]/total*100):40;
+  const pctB=total?Math.round(agg.revenueByProduct[1]/total*100):30;
+  updateRing('ring1', pctA, 'ring1-val', pctA+'%');
+  updateRing('ring2', pctB, 'ring2-val', pctB+'%');
+
+  const keys=Object.keys(SAMPLE);
+  stackedChart.data.datasets[0].data=keys.map(k=>Math.round(SAMPLE[k].reachTrend.slice(-state.rangeDays).reduce((a,b)=>a+b,0)/1000));
+  stackedChart.data.datasets[1].data=keys.map(k=>Math.round(SAMPLE[k].interactionsTrend.slice(-state.rangeDays).reduce((a,b)=>a+b,0)/1000));
+  stackedChart.data.datasets[2].data=keys.map(k=>Math.round(SAMPLE[k].salesTrend.slice(-state.rangeDays).reduce((a,b)=>a+b,0)));
+  stackedChart.update();
+
+  // Heatmap
+  buildHeatmap(agg.sales);
+
+  // Activity feed
+  buildActivity();
+}
+
+/* ════════════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════════════ */
+function updateSpark(chart, labels, data){
+  chart.data.labels=labels;
+  chart.data.datasets[0].data=data;
+  chart.update('none');
+}
+
+function updateRing(id, pct, valId, valText){
+  const circum=2*Math.PI*15.9;
+  const offset=circum*(1-pct/100);
+  const el=document.getElementById(id);
+  if(el){ el.style.strokeDasharray=circum; el.style.strokeDashoffset=offset; }
+  const v=document.getElementById(valId);
+  if(v) v.textContent=valText;
+}
+
+function setDelta(id, val){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.textContent=(val>=0?'▲ ':'▼ ')+Math.abs(val)+'%';
+  el.className='kpi-delta '+(val>=0?'delta-up':'delta-down');
+}
+
+function animCount(id, target, isCurr){
+  const el=document.getElementById(id);
+  if(!el) return;
+  let start=0; const dur=800; const startTime=performance.now();
+  function step(now){
+    const t=Math.min((now-startTime)/dur,1);
+    const val=Math.round(target*t);
+    el.textContent=isCurr?fmtCurr(val):fmtNum(val);
+    if(t<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function buildHeatmap(sales){
+  const hm=document.getElementById('heatmap');
+  hm.innerHTML='';
+  const max=Math.max(...sales.slice(-28),1);
+  for(let i=0;i<28;i++){
+    const val=sales[sales.length-28+i]||0;
+    const intensity=val/max;
+    const cell=document.createElement('div');
+    cell.className='heat-cell';
+    cell.style.background=`rgba(99,102,241,${0.05+intensity*0.9})`;
+    cell.title=`${val} ventas`;
+    cell.addEventListener('mouseenter',e=>showTooltip(e,val+' ventas'));
+    cell.addEventListener('mouseleave',hideTooltip);
+    hm.appendChild(cell);
+  }
+}
+
+function buildActivity(){
+  const feed=document.getElementById('activityFeed');
+  feed.innerHTML='';
+  ACTIVITIES.forEach(a=>{
+    feed.innerHTML+=`
+      <div class="activity-item">
+        <div class="activity-dot" style="background:${a.color};box-shadow:0 0 6px ${a.color}"></div>
+        <div>
+          <div class="activity-text">${a.text}</div>
+          <div class="activity-time">${a.time}</div>
+        </div>
+      </div>`;
+  });
+}
+
+const tooltip=document.getElementById('tooltip');
+function showTooltip(e, text){
+  tooltip.textContent=text;
+  tooltip.style.display='block';
+  tooltip.style.left=(e.clientX+12)+'px';
+  tooltip.style.top=(e.clientY-8)+'px';
+}
+function hideTooltip(){ tooltip.style.display='none'; }
+
+function exportData(){
+  const agg=aggregate();
+  const lines=['Fecha,Ventas,Alcance,Interacciones',...agg.labels.map((l,i)=>`${l},${agg.sales[i]},${agg.reach[i]},${agg.interactions[i]}`)];
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(lines.join('\n'));
+  a.download='dashboard-export.csv';
+  a.click();
+}
+
+/* ════════════════════════════════════════════════
+   EVENTOS
+════════════════════════════════════════════════ */
+document.querySelectorAll('.platform-checkbox').forEach(cb=>{
+  cb.addEventListener('change', e=>{
+    const plat=e.target.value;
+    const pill=document.getElementById('pill-'+plat);
+    const classMap={Instagram:'checked-IG',TikTok:'checked-TK',YouTube:'checked-YT',Pinterest:'checked-PT'};
+    if(e.target.checked){ state.platforms.add(plat); pill.classList.add(classMap[plat]); }
+    else { state.platforms.delete(plat); pill.classList.remove(classMap[plat]); }
+    updateUI();
+  });
+});
+
+document.getElementById('range').addEventListener('change', e=>{
+  state.rangeDays=Number(e.target.value);
+  updateUI();
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    const tab=this.dataset.tab;
+    lineChart.data.datasets.forEach((ds,i)=>{
+      if(tab==='all') ds.hidden=false;
+      else if(tab==='sales') ds.hidden=i!==0;
+      else if(tab==='reach') ds.hidden=i!==2;
+    });
+    lineChart.update();
+  });
+});
+
+/* Simulated live updates every 8s */
+setInterval(()=>{
+  Object.keys(SAMPLE).forEach(k=>{
+    const s=SAMPLE[k];
+    s.salesTrend.push(Math.max(0,Math.round(s.salesTrend.at(-1)*(0.85+Math.random()*0.35))));
+    s.reachTrend.push(Math.max(0,Math.round(s.reachTrend.at(-1)*(0.9+Math.random()*0.25))));
+    s.interactionsTrend.push(Math.max(0,Math.round(s.interactionsTrend.at(-1)*(0.88+Math.random()*0.3))));
+  });
+  updateUI();
+}, 8000);
+
+/* Init */
+createCharts();
+updateUI();
+window.addEventListener('resize',()=>[lineChart,barChart,donutChart,stackedChart].forEach(c=>c.resize()));
+</script>
+</body>
+</html>
